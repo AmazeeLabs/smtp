@@ -25,6 +25,8 @@ function smtp_install() {
     ->set('smtp_allowhtml', '')
     ->set('smtp_test_address', '')
     ->set('smtp_debugging', 0)
+    ->set('smtp_queue', 0)
+    ->set('smtp_batch_size', 10)
     ->set('prev_mail_system', $mail_config->get('interface.default'))
     ->save();
 }

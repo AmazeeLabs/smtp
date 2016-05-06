@@ -488,7 +488,8 @@ class SMTPMailSystem implements MailInterface {
       'from' => $from,
     );
     if ($this->smtpConfig->get('smtp_queue')) {
-      watchdog('smtp', 'Queue sending mail to: @to', array('@to' => $to));
+      $logger = \Drupal::logger('smtp');
+      $logger->info('Queue sending mail to: @to', array('@to' => $to));
       smtp_send_queue($mailerArr);
     }
     else {

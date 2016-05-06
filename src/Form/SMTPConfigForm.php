@@ -159,6 +159,25 @@ class SMTPConfigForm extends ConfigFormBase {
       '#description' => t('Checking this box will print SMTP messages from the server for every e-mail that is sent.'),
     );
 
+    $form['smtp_queue'] = array(
+      '#type' => 'checkbox',
+      '#title' => $this->t('Use the queue for sending the mails'),
+      '#default_value' => $config->get('smtp_queue'),
+      '#description' => $this->t('Checking this box will use the queue API for sending the mails instead of sending them on the fly. This is recommended when you have to sent lots of mails.'),
+    );
+
+    $options = array(1, 5, 10, 20, 50, 100);
+    $batch_options = array_combine($options, $options);
+    $batch_options[0] = $this->t('Unlimited');
+    $form['smtp_batch_size'] = array(
+      '#type' => 'select',
+      '#title' => $this->t('Batch size'),
+      '#default_value' => $config->get('smtp_batch_size'),
+      '#description' => $this->t('Some SMTP servers have a limitation of how many mails per second they can handle. By adjusting this setting, you can make sure that a pause of 1 second will be made after every time you reach the maximum number of mails per second. This is especially useful in combination with the queue setting above.'),
+      '#options' => $batch_options,
+      '#default_value' => $config->get('smtp_batch_size'),
+    );
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -218,6 +237,8 @@ class SMTPConfigForm extends ConfigFormBase {
       ->set('smtp_fromname', $values['smtp_fromname'])
       ->set('smtp_allowhtml', $values['smtp_allowhtml'])
       ->set('smtp_debugging', $values['smtp_debugging'])
+      ->set('smtp_queue', $values['smtp_queue'])
+      ->set('smtp_batch_size', $values['smtp_batch_size'])
       ->save();
 
     // Set as default mail system if module is enabled.

@@ -61,19 +61,6 @@ function smtp_mail($key, &$message, $params) {
 }
 
 /**
- * Implementation of hook_queue_info().
- */
-function smtp_queue_info() {
-  $queues['smtp_send_queue'] = array(
-    'worker callback' => 'smtp_send_queue_runner',
-    'cron' => array(
-      'time' => 60, // This is the max run time per cron run in seconds.
-    ),
-  );
-  return $queues;
-}
-
-/**
  * smtp_send_queue queuer.
  */
 function smtp_send_queue($mailerObj) {
@@ -81,16 +68,24 @@ function smtp_send_queue($mailerObj) {
   $queue->createItem($mailerObj);
 }
 
-function smtp_send_queue_runner($variables) {
-  _smtp_mailer_send($variables);
-}
-
 function _smtp_mailer_send($variables) {
+  $nr_mails_sent = &drupal_static(__FUNCTION__, 0);
+
+  $logger = \Drupal::logger('smtp');
+  $smtp_config = \Drupal::config('smtp.settings');
+  $batch_size = $smtp_config->get('smtp_batch_size');
+  // A $batch_size of 0 means unlimited, so we will check if we reached the
+  // limit only if we actually have a value in it.
+  if (!empty($batch_size) && $nr_mails_sent >= $batch_size) {
+    // If we reached the limit, we reset it and wait for one second.
+    $nr_mails_sent = 0;
+    $logger->info('The batch size limit has been reached, waiting for one second...');
+    sleep(1);
+  }
+  $nr_mails_sent++;
   $mailer = $variables['mailer'];
   $to = $variables['to'];
   $from = $variables['from'];
-
-  $logger = \Drupal::logger('smtp');
 
   // Let the people know what is going on.
   $logger->info('Sending mail to: @to', array('@to' => $to));
