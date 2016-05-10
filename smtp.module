@@ -96,6 +96,6 @@ function _smtp_mailer_send($variables) {
     return FALSE;
   }
 
-  $mailer->SmtpClose();
+  //$mailer->SmtpClose();
   return TRUE;
 }

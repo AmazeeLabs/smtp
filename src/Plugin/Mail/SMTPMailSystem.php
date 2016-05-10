@@ -11,6 +11,7 @@ use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Mail\MailInterface;
 use Drupal\Core\Mail\MailFormatHelper;
 use Drupal\smtp\PHPMailer\PHPMailer;
+use Drupal\smtp\PHPMailer\PHPMailerFactory;
 
 /**
  * Modify the drupal mail system to use smtp when sending emails.
@@ -75,7 +76,15 @@ class SMTPMailSystem implements MailInterface {
     $subject = $message['subject'];
 
     // Create a new PHPMailer object - autoloaded from registry.
-    $mailer = new PHPMailer();
+    //$mailer = new PHPMailer();
+    $mailer = PHPMailerFactory::getPHPMailer();
+    $mailer->SMTPKeepAlive = TRUE;
+    // Make sure we do not have any left recipients from previous mails.
+    $mailer->ClearAllRecipients();
+    $mailer->ClearAddresses();
+    $mailer->ClearAttachments();
+    $mailer->ClearReplyTos();
+    $mailer->ClearCustomHeaders();
 
     // Turn on debugging, if requested.
     if ($this->smtpConfig->get('smtp_debugging') == 1) {
